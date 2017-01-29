@@ -27,6 +27,7 @@
         - php-pdo
         - php-process
         - php-xml
+        - php-intl
 
     - name: be sure httpd is running and enabled
       service: name=httpd state=running enabled=yes

@@ -27,6 +27,7 @@
         - php-common
         - php-json
         - php-process
+        - php-intl
 
     - name: be sure httpd is running and enabled
       service: name=httpd state=running enabled=yes
