@@ -4,6 +4,7 @@
   tasks:
     - name: install httpd
       yum: name=httpd state=installed
+
     - name: install utils
       yum: name={{ item }} state=installed
       with_items:
@@ -11,12 +12,18 @@
         - zip
         - unzip
 
-    # - name: install mariadb
-    #   yum: name={{ item }} state=installed
-    #   with_items:
-    #     - mariadb
-    #     - mariadb-devel
-    #     - mariadb-server
+    - name: install repos
+      yum: name={{ item }} state=installed
+      with_items:
+        - epel-release
+        - http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+
+    - name: install mariadb
+      yum: name={{ item }} state=installed
+      with_items:
+        - mariadb
+        - mariadb-devel
+        - mariadb-server
 
     - name: install php
       yum: pkg={{ item }} state=latest enablerepo=remi,remi-php71
@@ -40,5 +47,5 @@
     - name: be sure httpd is running and enabled
       service: name=httpd state=running enabled=yes
 
-    # - name: be sure mariadb is running and enabled
-    #   service: name=mariadb state=running enabled=yes
+    - name: be sure mariadb is running and enabled
+      service: name=mariadb state=running enabled=yes
