@@ -171,4 +171,12 @@
       when : not vagrant_html.stat.exists
       tags: html_synced_folder
 
+    - name: install MySQL-python
+      yum: name=MySQL-python state=installed
+
+    - name: create a new database with name 'vagrant'
+      mysql_db:
+        name: vagrant
+        state: present
+        collation: utf8_general_ci
 

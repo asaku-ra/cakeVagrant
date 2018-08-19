@@ -72,8 +72,8 @@ Vagrant.configure("2") do |config|
 
   # Run Ansible from the Vagrant VM
   config.vm.provision "ansible_local" do |ansible|
-    ansible.playbook = "playbook.yml"
-    ansible.verbose = true
+    ansible.playbook = "playbook_ansible_local.yml"
+    ansible.verbose = false
     ansible.install = true
   end
 end
