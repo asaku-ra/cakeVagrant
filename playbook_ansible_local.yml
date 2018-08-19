@@ -1,0 +1,174 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+
+    - name: install utils
+      yum: name={{ item }} state=installed
+      with_items:
+        - git
+        - zip
+        - unzip
+
+    - name: set timezone to Asia/Tokyo
+      timezone:
+        name: Asia/Tokyo
+
+    - name: install libselinux-python
+      yum: name=libselinux-python state=installed
+
+    - name: disable SELinux
+      selinux:
+        state: disabled
+
+    - name: install repos
+      yum: name={{ item }} state=installed
+      with_items:
+        - epel-release
+        - http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+
+    - name: install httpd
+      yum: name=httpd state=installed
+
+    - name: install mariadb
+      yum: name={{ item }} state=installed
+      with_items:
+        - mariadb
+        - mariadb-devel
+        - mariadb-server
+
+    - name: install php
+      yum: pkg={{ item }} state=latest enablerepo=remi,remi-php71
+      with_items:
+        - php
+        - php-devel
+        - php-fpm
+        - php-mbstring
+        - php-pdo
+        - php-mcrypt
+        - php-mysql
+        - php-mysqlnd
+        - php-opcache
+        - php-xml
+        - php-cli
+        - php-common
+        - php-json
+        - php-process
+        - php-intl
+        - php-gmp
+
+    - name: configure php.ini memory_limit
+      ini_file:
+        path: /etc/php.ini
+        section: PHP
+        option: memory_limit
+        value: 512M
+        backup: yes
+
+    - name: be sure httpd is running and enabled
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: be sure mariadb is running and enabled
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: check composer
+      stat: path=/usr/local/bin/composer
+      register: composer_bin
+      tags: composer
+
+    - block:
+      - name: download composer
+        get_url:
+          url: https://getcomposer.org/installer
+          dest: /tmp/installer
+
+      - name: install composer
+        shell: cat /tmp/installer | php -- --install-dir=/usr/local/bin
+
+      - name: rename composer.phar to composer
+        shell: mv /usr/local/bin/composer.phar /usr/local/bin/composer
+
+      - name: make composer executable
+        file:
+          path: /usr/local/bin/composer
+          mode: a+x
+          state: file
+
+      when: not composer_bin.stat.exists
+      tags: composer
+
+    - name: configure httpd.conf AllowOverride
+      replace:
+        path: '/etc/httpd/conf/httpd.conf'
+        regexp: 'AllowOverride None'
+        replace: 'AllowOverride All'
+        backup: no
+
+    - name: configure httpd.conf EnableSendfile
+      replace:
+        path: '/etc/httpd/conf/httpd.conf'
+        regexp: 'EnableSendfile on'
+        replace: 'EnableSendfile off'
+        backup: yes
+
+    - name: check timezone.sql
+      stat: path=/tmp/timezone.sql
+      register: timezone_sql
+      tags: mariadb_timezone
+
+    - block:
+      - name: create timezone.sql
+        shell: /usr/bin/mysql_tzinfo_to_sql /usr/share/zoneinfo > /tmp/timezone.sql
+
+      - name: execute timezone.sql
+        shell: mysql -u root -Dmysql < /tmp/timezone.sql
+
+      - name: configure my.cnf
+        ini_file:
+          path: /etc/my.cnf
+          section: mysqld
+          option: default-time-zone
+          value: Asia/Tokyo
+          backup: yes
+
+      - name: restart mariadb
+        service:
+          name: mariadb
+          state: restarted
+
+      when: not timezone_sql.stat.exists
+      tags: mariadb_timezone
+
+    - name: check /vagrant/html
+      stat: path=/vagrant/html
+      register: vagrant_html
+      tags: html_synced_folder
+
+    - block:
+      - name: delete /var/www/html
+        file:
+          path: /var/www/html
+          state: absent
+
+      - name: create /vagrant/html
+        file:
+          path: /vagrant/html
+          state: directory
+          mode: 0777
+
+      - name: create symbolic link
+        file:
+          src: /vagrant/html
+          dest: /var/www/html
+          state: link
+
+      when : not vagrant_html.stat.exists
+      tags: html_synced_folder
+
+
