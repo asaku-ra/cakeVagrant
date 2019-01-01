@@ -13,15 +13,18 @@
     - name: install libselinux-python
       yum: name=libselinux-python state=installed
 
+    - name: add user 'webadmin'
+      user:
+        name: webadmin
+
     - name: disable SELinux
       selinux:
         state: disabled
 
     - name: install repos
-      yum: name={{ item }} state=installed
-      with_items:
-        - epel-release
-        - http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+      yum:
+        name: ['epel-release', 'http://rpms.famillecollet.com/enterprise/remi-release-7.rpm']
+        state: installed
 
     - name: install the 'Development tools' package group
       yum: name="@Development tools" state=present
@@ -33,31 +36,15 @@
       yum: name=httpd state=installed
 
     - name: install mariadb
-      yum: name={{ item }} state=installed
-      with_items:
-        - mariadb
-        - mariadb-devel
-        - mariadb-server
+      yum:
+        name: ['mariadb', 'mariadb-devel', 'mariadb-server']
+        state: installed
 
     - name: install php
-      yum: pkg={{ item }} state=latest enablerepo=remi,remi-php71
-      with_items:
-        - php
-        - php-devel
-        - php-fpm
-        - php-mbstring
-        - php-pdo
-        - php-mcrypt
-        - php-mysql
-        - php-mysqlnd
-        - php-opcache
-        - php-xml
-        - php-cli
-        - php-common
-        - php-json
-        - php-process
-        - php-intl
-        - php-gmp
+      yum:
+        pkg: ['php', 'php-devel', 'php-fpm', 'php-mbstring', 'php-pdo', 'php-mcrypt', 'php-mysql', 'php-mysqlnd', 'php-opcache', 'php-xml', 'php-cli', 'php-common', 'php-json', 'php-process', 'php-intl', 'php-gmp', 'php-gd']
+        state: latest
+        enablerepo: ['remi', 'remi-php73']
 
     - name: configure php.ini memory_limit
       ini_file:
