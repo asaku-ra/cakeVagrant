@@ -42,7 +42,7 @@
 
     - name: install php
       yum:
-        pkg: ['php', 'php-devel', 'php-fpm', 'php-mbstring', 'php-pdo', 'php-mcrypt', 'php-mysql', 'php-mysqlnd', 'php-opcache', 'php-xml', 'php-cli', 'php-common', 'php-json', 'php-process', 'php-intl', 'php-gmp', 'php-gd']
+        name: ['php', 'php-devel', 'php-fpm', 'php-mbstring', 'php-pdo', 'php-mcrypt', 'php-mysql', 'php-mysqlnd', 'php-opcache', 'php-xml', 'php-cli', 'php-common', 'php-json', 'php-process', 'php-intl', 'php-gmp', 'php-gd', 'php-zip', 'php-symfony', 'php-tokenizer', 'php-phpunit-PHPUnit']
         state: latest
         enablerepo: ['remi', 'remi-php73']
 
